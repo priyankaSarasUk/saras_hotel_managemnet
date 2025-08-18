@@ -20,6 +20,7 @@
         </div>
     @endif
 
+    {{-- Add Room Form --}}
     <form action="{{ route('rooms.store') }}" method="POST">
         @csrf
 
@@ -57,5 +58,47 @@
 
         <button type="submit" class="btn btn-primary w-100">Add Room</button>
     </form>
+
+    {{-- Room Listing --}}
+    <h2 class="mt-5">Room List</h2>
+    @if($rooms->isEmpty())
+        <p>No rooms available.</p>
+    @else
+        <table class="table table-bordered mt-3">
+            <thead>
+                <tr>
+                    <th>ID</th>
+                    <th>Hotel Name</th>
+                    <th>Room Number</th>
+                    <th>Room Name</th>
+                    <th>Room Type</th>
+                    <th>Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach($rooms as $room)
+                    <tr>
+                        <td>{{ $room->id }}</td>
+                        <td>{{ $room->hotel_name }}</td>
+                        <td>{{ $room->room_number }}</td>
+                        <td>{{ $room->room_name }}</td>
+                        <td>{{ ucfirst($room->room_type) }}</td>
+                        <td>
+                            <a href="{{ route('rooms.edit', $room->id) }}" class="btn btn-sm btn-warning">Edit</a>
+
+                            <form action="{{ route('rooms.destroy', $room->id) }}" method="POST" style="display:inline-block;">
+                                @csrf
+                                @method('DELETE')
+                                <button type="submit" class="btn btn-sm btn-danger" 
+                                        onclick="return confirm('Are you sure you want to delete this room?')">
+                                    Delete
+                                </button>
+                            </form>
+                        </td>
+                    </tr>
+                @endforeach
+            </tbody>
+        </table>
+    @endif
 </div>
 @endsection

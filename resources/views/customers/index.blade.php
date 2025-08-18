@@ -40,32 +40,34 @@
         </div>
     </form>
 
-    <!-- Customer Table -->
-    <table class="table table-bordered">
-        <thead class="table-light">
-            <tr>
-                <th>Name</th>
-                <th>Phone</th>
-                <th>Date Added</th>
-            </tr>
-        </thead>
-        <tbody>
-            @forelse($customers as $customer)
+    <!-- Customer Table (Scrollable) -->
+    <div class="table-container">
+        <table class="table table-bordered">
+            <thead class="table-light">
                 <tr>
-                    <td>{{ $customer->name }}</td>
-                    <td>{{ $customer->phone }}</td>
-                    <td>{{ $customer->created_at->format('Y-m-d') }}</td>
+                    <th>Name</th>
+                    <th>Phone</th>
+                    <th>Date Added</th>
                 </tr>
-            @empty
-                <tr>
-                    <td colspan="3" class="text-center">No customers found</td>
-                </tr>
-            @endforelse
-        </tbody>
-    </table>
+            </thead>
+            <tbody>
+                @forelse($customers as $customer)
+                    <tr>
+                        <td>{{ $customer->name }}</td>
+                        <td>{{ $customer->phone }}</td>
+                        <td>{{ $customer->created_at->format('Y-m-d') }}</td>
+                    </tr>
+                @empty
+                    <tr>
+                        <td colspan="3" class="text-center">No customers found</td>
+                    </tr>
+                @endforelse
+            </tbody>
+        </table>
+    </div>
 
     <!-- Pagination -->
-    <div>
+    <div class="mt-3">
         {{ $customers->links() }}
     </div>
 </div>
@@ -104,3 +106,25 @@
     </div>
 </div>
 @endsection
+
+@push('styles')
+<style>
+.table-container {
+    max-height: 300px;   /* adjust as needed */
+    overflow-y: auto;    /* vertical scrollbar */
+    margin-top: 10px;
+}
+
+/* Optional: scrollbar styling */
+.table-container::-webkit-scrollbar {
+    width: 8px;
+}
+.table-container::-webkit-scrollbar-thumb {
+    background: #888;
+    border-radius: 4px;
+}
+.table-container::-webkit-scrollbar-thumb:hover {
+    background: #555;
+}
+</style>
+@endpush

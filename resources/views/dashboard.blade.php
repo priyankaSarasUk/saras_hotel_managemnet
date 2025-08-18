@@ -1,4 +1,4 @@
- @extends('layout.app')
+@extends('layout.app')
 
 @section('content')
 <div class="container">
@@ -49,27 +49,53 @@
     </div>
 
     <h3 class="mt-4">Recent Bookings</h3>
-    <table class="table table-bordered">
-        <thead>
-            <tr>
-                <th>Booking ID</th>
-                <th>Customer</th>
-                <th>Room</th>
-                <th>Check-in</th>
-                <th>Check-out</th>
-            </tr>
-        </thead>
-        <tbody>
-            @foreach($recentBookings as $booking)
+
+    <!-- Scrollable table container -->
+    <div class="table-container">
+        <table class="table table-bordered">
+            <thead class="table-dark">
                 <tr>
-                    <td>{{ $booking->id }}</td>
-                    <td>{{ $booking->customer->name ?? 'N/A' }}</td>
-                    <td>{{ $booking->room->room_number ?? 'N/A' }}</td>
-                    <td>{{ $booking->check_in }}</td>
-                    <td>{{ $booking->check_out }}</td>
+                    <th>Booking ID</th>
+                    <th>Customer</th>
+                    <th>Room</th>
+                    <th>Check-in</th>
+                    <th>Check-out</th>
                 </tr>
-            @endforeach
-        </tbody>
-    </table>
+            </thead>
+            <tbody>
+                @foreach($recentBookings as $booking)
+                    <tr>
+                        <td>{{ $booking->id }}</td>
+                        <td>{{ $booking->customer->name ?? 'N/A' }}</td>
+                        <td>{{ $booking->room->room_number ?? 'N/A' }}</td>
+                        <td>{{ $booking->check_in }}</td>
+                        <td>{{ $booking->check_out }}</td>
+                    </tr>
+                @endforeach
+            </tbody>
+        </table>
+    </div>
 </div>
 @endsection
+
+@push('styles')
+<style>
+.table-container {
+    max-height: 250px;   /* limit height */
+    overflow-y: auto;    /* vertical scroll */
+    margin-top: 10px;
+}
+
+/* Optional scrollbar styling */
+.table-container::-webkit-scrollbar {
+    width: 8px;
+}
+.table-container::-webkit-scrollbar-thumb {
+    background: #888;
+    border-radius: 4px;
+}
+.table-container::-webkit-scrollbar-thumb:hover {
+    background: #555;
+}
+</style>
+@endpush
