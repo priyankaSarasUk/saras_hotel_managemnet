@@ -55,6 +55,13 @@ Route::middleware('auth')->group(function () {
     // 🔹 Room Routes
     Route::resource('rooms', RoomController::class)->except(['show']);
 
-    // 🔹 Booking Routes
-    Route::resource('bookings', BookingController::class)->except(['show']);
+    // 🔹 Booking Routes (Include show route so "View" button works)
+    Route::resource('bookings', BookingController::class);
+
+    // 🔹 Extra delete routes for uploaded ID files
+    Route::delete('/bookings/{booking}/delete-front/{index}', [BookingController::class, 'deleteFront'])
+        ->name('bookings.deleteFront');
+    Route::delete('/bookings/{booking}/delete-back/{index}', [BookingController::class, 'deleteBack'])
+        ->name('bookings.deleteBack');
+
 });

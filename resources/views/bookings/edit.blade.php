@@ -14,6 +14,7 @@
         </div>
     @endif
 
+    {{-- Update Form --}}
     <form action="{{ route('bookings.update', $booking->id) }}" method="POST" enctype="multipart/form-data">
         @csrf
         @method('PUT')
@@ -39,10 +40,14 @@
         </select>
 
         <label>Booking Date</label>
-        <input type="date" name="booking_date" value="{{ old('booking_date', $booking->booking_date) }}" required class="form-control mb-3">
+        <input type="date" name="booking_date"
+               value="{{ old('booking_date', \Carbon\Carbon::parse($booking->booking_date)->format('Y-m-d')) }}"
+               required class="form-control mb-3">
 
         <label>Checkout Date</label>
-        <input type="date" name="checkout_date" value="{{ old('checkout_date', $booking->checkout_date) }}" required class="form-control mb-3">
+        <input type="date" name="checkout_date"
+               value="{{ old('checkout_date', \Carbon\Carbon::parse($booking->checkout_date)->format('Y-m-d')) }}"
+               required class="form-control mb-3">
 
         <label>Members</label>
         <input type="number" name="members" value="{{ old('members', $booking->members) }}" min="1" required class="form-control mb-3">
@@ -56,14 +61,42 @@
         <label>Amount</label>
         <input type="number" step="0.01" name="amount" value="{{ old('amount', $booking->amount) }}" required class="form-control mb-3">
 
-        <label>ID Upload(s)</label>
-        <input type="file" name="id_uploads[]" multiple class="form-control mb-3">
+        {{-- Front ID Upload --}}
+        <label>Front ID Upload(s)</label>
+        <input type="file" name="id_front[]" multiple class="form-control mb-3">
 
-        @if($booking->id_uploads)
-            <p>Existing uploads:</p>
+        @if($booking->id_front)
+            <p>Existing Front ID:</p>
             <ul>
-                @foreach($booking->id_uploads as $file)
-                    <li><a href="{{ asset('storage/' . $file) }}" target="_blank">{{ basename($file) }}</a></li>
+                @foreach($booking->id_front as $index => $file)
+                    <li>
+                        <a href="{{ asset('storage/' . $file) }}" target="_blank">{{ basename($file) }}</a>
+                        <form action="{{ route('bookings.deleteFront', [$booking->id, $index]) }}" method="POST" style="display:inline;">
+                            @csrf
+                            @method('DELETE')
+                            <button type="submit" class="btn btn-sm btn-danger">Delete</button>
+                        </form>
+                    </li>
+                @endforeach
+            </ul>
+        @endif
+
+        {{-- Back ID Upload --}}
+        <label>Back ID Upload(s)</label>
+        <input type="file" name="id_back[]" multiple class="form-control mb-3">
+
+        @if($booking->id_back)
+            <p>Existing Back ID:</p>
+            <ul>
+                @foreach($booking->id_back as $index => $file)
+                    <li>
+                        <a href="{{ asset('storage/' . $file) }}" target="_blank">{{ basename($file) }}</a>
+                        <form action="{{ route('bookings.deleteBack', [$booking->id, $index]) }}" method="POST" style="display:inline;">
+                            @csrf
+                            @method('DELETE')
+                            <button type="submit" class="btn btn-sm btn-danger">Delete</button>
+                        </form>
+                    </li>
                 @endforeach
             </ul>
         @endif

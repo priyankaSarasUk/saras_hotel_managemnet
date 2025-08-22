@@ -47,11 +47,13 @@
                 <option value="double" {{ $room->room_type == 'double' ? 'selected' : '' }}>Double</option>
                 <option value="triple" {{ $room->room_type == 'triple' ? 'selected' : '' }}>Triple</option>
                 <option value="4 bed" {{ $room->room_type == '4 bed' ? 'selected' : '' }}>4 Bed</option>
+                <option value="6 bed" {{ $room->room_type == '6 bed' ? 'selected' : '' }}>6 Bed</option>
             </select>
         </div>
 
         <button type="submit" class="btn btn-success">Update Room</button>
-        <a href="{{ route('rooms.create') }}" class="btn btn-secondary">Cancel</a>
+        <a href="{{ route('rooms.index') }}" class="btn btn-secondary">Cancel</a>
+
     </form>
 </div>
 @endsection

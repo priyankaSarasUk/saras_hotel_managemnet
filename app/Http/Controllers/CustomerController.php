@@ -12,12 +12,12 @@ class CustomerController extends Controller
      */
     public function index(Request $request)
     {
-        $query = Customer::query();
+        $query = Customer::withCount('bookings'); // ✅ Add bookings count
 
-        // Show only customers of the logged-in user
+        // Show only customers created by logged-in user
         $query->where('user_id', auth()->id());
 
-        // Apply filters
+        // Filters
         if ($request->filled('name')) {
             $query->where('name', 'like', '%' . $request->name . '%');
         }
@@ -30,29 +30,26 @@ class CustomerController extends Controller
             $query->whereDate('created_at', $request->date);
         }
 
-        // Fetch customers with latest first
-        $customers = $query->orderBy('created_at', 'desc')->paginate(10);
+        // Fetch customers (latest first) with bookings count
+        $customers = $query->latest()->paginate(10);
 
         return view('customers.index', compact('customers'));
     }
 
     /**
-     * Store a newly created customer in storage.
+     * Store a newly created customer.
      */
     public function store(Request $request)
     {
-        // Validate input
         $validated = $request->validate([
             'name'    => 'required|string|max:255',
-            'phone'   => 'required|digits:10',
-            'address' => 'nullable|string|max:255',
+            'phone'   => 'required|string|max:20',
+            'address' => 'nullable|string|max:500',
             'email'   => 'nullable|email|max:255',
         ]);
 
-        // Attach logged-in user_id
         $validated['user_id'] = auth()->id();
 
-        // Create customer
         Customer::create($validated);
 
         return redirect()->route('customers.index')
@@ -60,11 +57,10 @@ class CustomerController extends Controller
     }
 
     /**
-     * Show the form for editing a customer.
+     * Show the form for editing the customer.
      */
     public function edit(Customer $customer)
     {
-        // Prevent editing others’ customers
         if ($customer->user_id !== auth()->id()) {
             abort(403, 'Unauthorized action.');
         }
@@ -73,20 +69,18 @@ class CustomerController extends Controller
     }
 
     /**
-     * Update the specified customer in storage.
+     * Update the specified customer.
      */
     public function update(Request $request, Customer $customer)
     {
-        // Prevent updating others’ customers
         if ($customer->user_id !== auth()->id()) {
             abort(403, 'Unauthorized action.');
         }
 
-        // Validate input
         $validated = $request->validate([
             'name'    => 'required|string|max:255',
-            'phone'   => 'required|digits:10',
-            'address' => 'nullable|string|max:255',
+            'phone'   => 'required|string|max:20',
+            'address' => 'nullable|string|max:500',
             'email'   => 'nullable|email|max:255',
         ]);
 
@@ -97,11 +91,10 @@ class CustomerController extends Controller
     }
 
     /**
-     * Remove the specified customer from storage.
+     * Remove the specified customer.
      */
     public function destroy(Customer $customer)
     {
-        // Prevent deleting others’ customers
         if ($customer->user_id !== auth()->id()) {
             abort(403, 'Unauthorized action.');
         }

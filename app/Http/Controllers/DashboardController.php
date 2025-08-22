@@ -8,6 +8,7 @@ use App\Models\Booking;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Schema;
 use Illuminate\Support\Facades\Auth;
+use Carbon\Carbon;
 
 class DashboardController extends Controller
 {
@@ -28,10 +29,12 @@ class DashboardController extends Controller
         }
 
         $totalBookings = Booking::count();
-        $recentBookings = Booking::with('customer', 'room')
-                                ->latest()
-                                ->take(5)
-                                ->get();
+
+        // ✅ Fetch only today's active bookings using check_in / check_out
+        $todaysBookings = Booking::with(['customer', 'room'])
+            ->whereDate('check_in', '<=', Carbon::today())
+            ->whereDate('check_out', '>=', Carbon::today())
+            ->get();
 
         // Pass data + user to the view
         return view('dashboard', compact(
@@ -40,7 +43,7 @@ class DashboardController extends Controller
             'totalRooms',
             'availableRooms',
             'totalBookings',
-            'recentBookings'
+            'todaysBookings'
         ));
     }
 }

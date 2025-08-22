@@ -2,91 +2,80 @@
 
 namespace App\Http\Controllers;
 
-use Illuminate\Http\Request;
-use Illuminate\Validation\Rule;
 use App\Models\Room;
+use Illuminate\Http\Request;
 
 class RoomController extends Controller
 {
-    /**
-     * Display a listing of the rooms.
-     */
-    public function index()
+    // Show all rooms
+    public function index(Request $request)
     {
-        $rooms = Room::orderBy('created_at', 'desc')->paginate(10);
+        $query = Room::query();
+
+        if ($request->filled('hotel_name')) {
+            $query->where('hotel_name', 'like', '%' . $request->hotel_name . '%');
+        }
+
+        if ($request->filled('room_number')) {
+            $query->where('room_number', 'like', '%' . $request->room_number . '%');
+        }
+
+        if ($request->filled('room_type')) {
+            $query->where('room_type', 'like', '%' . $request->room_type . '%');
+        }
+
+        $rooms = $query->orderBy('created_at', 'desc')->paginate(10);
+        $rooms->appends($request->all());
+
         return view('rooms.index', compact('rooms'));
     }
 
-    /**
-     * Show the form for creating a new room.
-     */
+    // Show create form
     public function create()
     {
         return view('rooms.create');
     }
 
-    /**
-     * Store a newly created room in storage.
-     */
+    // Store new room
     public function store(Request $request)
     {
-        $validatedData = $request->validate([
+        $request->validate([
             'hotel_name'   => 'required|string|max:255',
-            'room_number'  => 'required|string|max:255|unique:rooms,room_number',
+            'room_number'  => 'required|string|max:255|unique:rooms',
             'room_name'    => 'required|string|max:255',
-            'room_type'    => ['required', Rule::in(['single', 'double', 'triple', '4 bed'])],
+            'room_type'    => 'required|string|max:255',
         ]);
 
-        Room::create($validatedData);
+        Room::create($request->all());
 
-        return redirect()->route('rooms.index')->with('success', 'Room added successfully!');
+        return redirect()->route('rooms.index')->with('success', 'Room created successfully.');
     }
 
-    /**
-     * Display the specified room.
-     */
-    public function show(Room $room)
-    {
-        return view('rooms.show', compact('room'));
-    }
-
-    /**
-     * Show the form for editing the specified room.
-     */
+    // Show edit form
     public function edit(Room $room)
     {
         return view('rooms.edit', compact('room'));
     }
 
-    /**
-     * Update the specified room in storage.
-     */
+    // Update room
     public function update(Request $request, Room $room)
     {
-        $validatedData = $request->validate([
+        $request->validate([
             'hotel_name'   => 'required|string|max:255',
-            'room_number'  => [
-                'required',
-                'string',
-                'max:255',
-                Rule::unique('rooms', 'room_number')->ignore($room->id),
-            ],
+            'room_number'  => 'required|string|max:255|unique:rooms,room_number,' . $room->id,
             'room_name'    => 'required|string|max:255',
-            'room_type'    => ['required', Rule::in(['single', 'double', 'triple', '4 bed'])],
+            'room_type'    => 'required|string|max:255',
         ]);
 
-        $room->update($validatedData);
+        $room->update($request->all());
 
-        return redirect()->route('rooms.index')->with('success', 'Room updated successfully!');
+        return redirect()->route('rooms.index')->with('success', 'Room updated successfully.');
     }
 
-    /**
-     * Remove the specified room from storage.
-     */
+    // Delete room
     public function destroy(Room $room)
     {
         $room->delete();
-
-        return redirect()->route('rooms.index')->with('success', 'Room deleted successfully!');
+        return redirect()->route('rooms.index')->with('success', 'Room deleted successfully.');
     }
 }

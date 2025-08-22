@@ -48,7 +48,8 @@
         </div>
     </div>
 
-    <h3 class="mt-4">Recent Bookings</h3>
+    <!-- Changed heading -->
+    <h3 class="mt-4">Today's Active Bookings</h3>
 
     <!-- Scrollable table container -->
     <div class="table-container">
@@ -63,7 +64,7 @@
                 </tr>
             </thead>
             <tbody>
-                @foreach($recentBookings as $booking)
+                @forelse($todaysBookings as $booking)
                     <tr>
                         <td>{{ $booking->id }}</td>
                         <td>{{ $booking->customer->name ?? 'N/A' }}</td>
@@ -71,7 +72,11 @@
                         <td>{{ $booking->check_in }}</td>
                         <td>{{ $booking->check_out }}</td>
                     </tr>
-                @endforeach
+                @empty
+                    <tr>
+                        <td colspan="5" class="text-center">No active bookings today</td>
+                    </tr>
+                @endforelse
             </tbody>
         </table>
     </div>
