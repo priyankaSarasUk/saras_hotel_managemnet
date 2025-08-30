@@ -12,7 +12,7 @@ class CustomerController extends Controller
      */
     public function index(Request $request)
     {
-        $query = Customer::withCount('bookings'); // ✅ Add bookings count
+        $query = Customer::withCount('bookings'); //  Add bookings count
 
         // Show only customers created by logged-in user
         $query->where('user_id', auth()->id());
@@ -46,6 +46,9 @@ class CustomerController extends Controller
             'phone'   => 'required|string|max:20',
             'address' => 'nullable|string|max:500',
             'email'   => 'nullable|email|max:255',
+            'age' => 'nullable|integer|min:1|max:120',
+            'nationality' => 'nullable|string|max:255',
+            'occupation' => 'nullable|string|max:255',
         ]);
 
         $validated['user_id'] = auth()->id();
@@ -82,6 +85,9 @@ class CustomerController extends Controller
             'phone'   => 'required|string|max:20',
             'address' => 'nullable|string|max:500',
             'email'   => 'nullable|email|max:255',
+            'age' => 'nullable|integer|min:1|max:120',
+            'nationality' => 'nullable|string|max:255',
+             'occupation' => 'nullable|string|max:255',
         ]);
 
         $customer->update($validated);

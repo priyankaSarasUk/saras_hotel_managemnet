@@ -10,36 +10,33 @@ use Illuminate\Support\Facades\Storage;
 
 class BookingController extends Controller
 {
-    /**
-     * Display a listing of bookings, optionally filtered.
-     */
     public function index(Request $request)
     {
         $query = Booking::with(['customer', 'room', 'user']);
 
-        // Filters
         if ($request->filled('customer_name')) {
             $query->whereHas('customer', fn($q) => $q->where('name', 'like', '%' . $request->customer_name . '%'));
         }
 
         if ($request->filled('booking_date')) {
-            $query->whereDate('check_in', $request->booking_date);
+            $query->whereDate('booking_date', $request->booking_date);
         }
 
-        if ($request->filled('checkout_date')) {
-            $query->whereDate('check_out', $request->checkout_date);
+        if ($request->filled('check_out')) {
+            $query->whereDate('check_out', $request->check_out);
         }
 
-        if ($request->filled('customer_id')) { // filter bookings by a specific customer
+        if ($request->filled('customer_id')) {
             $query->where('customer_id', $request->customer_id);
         }
 
         $bookings = $query->orderBy('created_at', 'desc')->paginate(10);
-
-        // Pass customer if filtered by customer
         $customer = $request->filled('customer_id') ? Customer::find($request->customer_id) : null;
 
-        return view('bookings.index', compact('bookings', 'customer'));
+        $customers = Customer::all();
+        $rooms = Room::all();
+
+        return view('bookings.index', compact('bookings', 'customer', 'customers', 'rooms'));
     }
 
     public function create()
@@ -52,39 +49,39 @@ class BookingController extends Controller
     public function store(Request $request)
     {
         $validated = $request->validate([
-            'customer_id'   => 'required|exists:customers,id',
-            'room_id'       => 'required|exists:rooms,id',
-            'booking_date'  => 'required|date',
-            'checkout_date' => 'required|date|after_or_equal:booking_date',
-            'members'       => 'required|integer|min:1',
-            'adults'        => 'required|integer|min:1',
-            'childs'        => 'required|integer|min:0',
-            'amount'        => 'required|numeric|min:0',
-            'id_front.*'    => 'nullable|file|mimes:jpg,jpeg,png,pdf|max:2048',
-            'id_back.*'     => 'nullable|file|mimes:jpg,jpeg,png,pdf|max:2048',
+            'customer_id'    => 'required|exists:customers,id',
+            'room_id'        => 'required|exists:rooms,id',
+            'male'           => 'required|integer|min:0',
+            'female'         => 'required|integer|min:0',
+            'childs'         => 'required|integer|min:0',
+            'relation'       => 'nullable|string|max:255',
+            'purpose'        => 'nullable|string|max:255',
+            'arrival_from'   => 'nullable|string|max:255',
+            'vehicle_number' => 'nullable|string|max:255',
+            'amount'         => 'required|numeric|min:0',
+            'booking_date'   => 'nullable|date',
+            'check_in'       => 'nullable|date',
+            'check_out'      => 'nullable|date',
+            'id_front.*'     => 'nullable|file|mimes:jpg,jpeg,png,pdf|max:2048',
+            'id_back.*'      => 'nullable|file|mimes:jpg,jpeg,png,pdf|max:2048',
         ]);
 
-        $idFrontPaths = $request->hasFile('id_front') 
-            ? array_map(fn($file) => $file->store('id_uploads/front', 'public'), $request->file('id_front')) 
+        $validated['check_in'] = $validated['check_in'] ?? now();
+        $validated['check_out'] = $validated['check_out'] ?? now()->addDay()->setTime(11, 0);
+        $validated['booking_date'] = $validated['booking_date'] ?? now();
+
+        $validated['members'] = $validated['male'] + $validated['female'] + $validated['childs'];
+        $validated['adults'] = $validated['male'] + $validated['female'];
+        $validated['user_id'] = auth()->id();
+
+        $validated['id_front'] = $request->hasFile('id_front')
+            ? array_map(fn($file) => $file->store('id_uploads/front', 'public'), $request->file('id_front'))
+            : [];
+        $validated['id_back'] = $request->hasFile('id_back')
+            ? array_map(fn($file) => $file->store('id_uploads/back', 'public'), $request->file('id_back'))
             : [];
 
-        $idBackPaths = $request->hasFile('id_back') 
-            ? array_map(fn($file) => $file->store('id_uploads/back', 'public'), $request->file('id_back')) 
-            : [];
-
-        Booking::create([
-            'customer_id' => $validated['customer_id'],
-            'room_id'     => $validated['room_id'],
-            'user_id'     => auth()->id(),
-            'check_in'    => $validated['booking_date'],
-            'check_out'   => $validated['checkout_date'],
-            'members'     => $validated['members'],
-            'adults'      => $validated['adults'],
-            'childs'      => $validated['childs'],
-            'amount'      => $validated['amount'],
-            'id_front'    => $idFrontPaths,
-            'id_back'     => $idBackPaths,
-        ]);
+        Booking::create($validated);
 
         return redirect()->route('bookings.index')->with('success', 'Booking created successfully!');
     }
@@ -102,46 +99,47 @@ class BookingController extends Controller
         $booking = Booking::findOrFail($id);
 
         $validated = $request->validate([
-            'customer_id'   => 'required|exists:customers,id',
-            'room_id'       => 'required|exists:rooms,id',
-            'booking_date'  => 'required|date',
-            'checkout_date' => 'required|date|after_or_equal:booking_date',
-            'members'       => 'required|integer|min:1',
-            'adults'        => 'required|integer|min:1',
-            'childs'        => 'required|integer|min:0',
-            'amount'        => 'required|numeric|min:0',
-            'id_front.*'    => 'nullable|file|mimes:jpg,jpeg,png,pdf|max:2048',
-            'id_back.*'     => 'nullable|file|mimes:jpg,jpeg,png,pdf|max:2048',
+            'customer_id'    => 'required|exists:customers,id',
+            'room_id'        => 'required|exists:rooms,id',
+            'male'           => 'required|integer|min:0',
+            'female'         => 'required|integer|min:0',
+            'childs'         => 'required|integer|min:0',
+            'relation'       => 'nullable|string|max:255',
+            'purpose'        => 'nullable|string|max:255',
+            'arrival_from'   => 'nullable|string|max:255',
+            'vehicle_number' => 'nullable|string|max:255',
+            'amount'         => 'required|numeric|min:0',
+            'booking_date'   => 'nullable|date',
+            'check_in'       => 'nullable|date',
+            'check_out'      => 'nullable|date',
+            'id_front.*'     => 'nullable|file|mimes:jpg,jpeg,png,pdf|max:2048',
+            'id_back.*'      => 'nullable|file|mimes:jpg,jpeg,png,pdf|max:2048',
         ]);
 
-        // Append new files to existing arrays
-        $idFrontPaths = $booking->id_front ?? [];
+        $validated['check_in'] = $validated['check_in'] ?? $booking->check_in ?? now();
+        $validated['check_out'] = $validated['check_out'] ?? $booking->check_out ?? now()->addDay()->setTime(11, 0);
+        $validated['booking_date'] = $validated['booking_date'] ?? $booking->booking_date ?? now();
+
+        $validated['members'] = $validated['male'] + $validated['female'] + $validated['childs'];
+        $validated['adults'] = $validated['male'] + $validated['female'];
+        $validated['user_id'] = auth()->id();
+
+        // Merge existing files with new uploads
+        $validated['id_front'] = $booking->id_front ?? [];
         if ($request->hasFile('id_front')) {
             foreach ($request->file('id_front') as $file) {
-                $idFrontPaths[] = $file->store('id_uploads/front', 'public');
+                $validated['id_front'][] = $file->store('id_uploads/front', 'public');
             }
         }
 
-        $idBackPaths = $booking->id_back ?? [];
+        $validated['id_back'] = $booking->id_back ?? [];
         if ($request->hasFile('id_back')) {
             foreach ($request->file('id_back') as $file) {
-                $idBackPaths[] = $file->store('id_uploads/back', 'public');
+                $validated['id_back'][] = $file->store('id_uploads/back', 'public');
             }
         }
 
-        $booking->update([
-            'customer_id' => $validated['customer_id'],
-            'room_id'     => $validated['room_id'],
-            'user_id'     => auth()->id(),
-            'check_in'    => $validated['booking_date'],
-            'check_out'   => $validated['checkout_date'],
-            'members'     => $validated['members'],
-            'adults'      => $validated['adults'],
-            'childs'      => $validated['childs'],
-            'amount'      => $validated['amount'],
-            'id_front'    => $idFrontPaths,
-            'id_back'     => $idBackPaths,
-        ]);
+        $booking->update($validated);
 
         return redirect()->route('bookings.index')->with('success', 'Booking updated successfully!');
     }
@@ -186,18 +184,15 @@ class BookingController extends Controller
         }
 
         $booking->delete();
-
         return redirect()->route('bookings.index')->with('success', 'Booking deleted successfully.');
     }
 
-    // Show a single booking
     public function show($id)
     {
         $booking = Booking::with(['customer', 'room', 'user'])->findOrFail($id);
         return view('bookings.show', compact('booking'));
     }
 
-    // Optional: Get bookings for a specific customer
     public function customerBookings($customerId)
     {
         $bookings = Booking::with(['room', 'user'])

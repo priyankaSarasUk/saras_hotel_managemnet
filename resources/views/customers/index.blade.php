@@ -49,8 +49,11 @@
                     <th>Phone</th>
                     <th>Address</th>
                     <th>Email</th>
-                    <th>Bookings</th>   {{-- Added --}}
+                    <th>Bookings</th>
                     <th>Date Added</th>
+                    <th>Age</th>
+                    <th>Nationality</th>
+                    <th>Occupation</th>
                     <th style="width:120px;">Actions</th>
                 </tr>
             </thead>
@@ -62,14 +65,22 @@
                         <td>{{ $customer->address }}</td>
                         <td>{{ $customer->email }}</td>
 
-                        {{-- Show bookings count, clickable link --}}
+                        {{-- Bookings count --}}
                         <td>
                             <a href="{{ route('bookings.index', ['customer_id' => $customer->id]) }}" class="btn btn-link p-0">
                                 {{ $customer->bookings_count ?? 0 }}
                             </a>
                         </td>
 
+                        {{-- Date Added --}}
                         <td>{{ $customer->created_at->format('Y-m-d') }}</td>
+
+                        {{-- Age, Nationality, Occupation --}}
+                        <td>{{ $customer->age }}</td>
+                        <td>{{ $customer->nationality }}</td>
+                        <td>{{ $customer->occupation }}</td>
+
+                        {{-- Actions --}}
                         <td>
                             <a href="{{ route('customers.edit', $customer->id) }}" class="btn btn-sm btn-warning">Edit</a>
                             <form action="{{ route('customers.destroy', $customer->id) }}" method="POST" class="d-inline">
@@ -84,7 +95,7 @@
                     </tr>
                 @empty
                     <tr>
-                        <td colspan="7" class="text-center">No customers found</td> {{-- updated colspan from 6 → 7 --}}
+                        <td colspan="10" class="text-center">No customers found</td>
                     </tr>
                 @endforelse
             </tbody>
@@ -123,6 +134,18 @@
                     <div class="mb-3">
                         <label class="form-label">Email</label>
                         <input type="email" name="email" class="form-control">
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Age</label>
+                        <input type="number" name="age" class="form-control" min="1" max="120">
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Nationality</label>
+                        <input type="text" name="nationality" class="form-control">
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Occupation</label>
+                        <input type="text" name="occupation" class="form-control">
                     </div>
                     <button type="submit" class="btn btn-success w-100">Save</button>
                 </form>

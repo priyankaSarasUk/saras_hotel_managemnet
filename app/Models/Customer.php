@@ -15,6 +15,9 @@ class Customer extends Model
         'address',
         'email',
         'user_id',
+        'age',
+        'nationality',
+        'occupation'
     ];
 
     /**
