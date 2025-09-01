@@ -30,7 +30,7 @@ class DashboardController extends Controller
 
         $totalBookings = Booking::count();
 
-        // ✅ Fetch only today's active bookings using check_in / check_out
+        //  Fetch only today's active bookings using check_in / check_out
         $todaysBookings = Booking::with(['customer', 'room'])
             ->whereDate('check_in', '<=', Carbon::today())
             ->whereDate('check_out', '>=', Carbon::today())
