@@ -49,7 +49,7 @@ class User extends Authenticatable
     }
 
     /**
-     * ✅ A user can have many customers
+     *  A user can have many customers
      */
     public function customers()
     {

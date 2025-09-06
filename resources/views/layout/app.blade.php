@@ -65,6 +65,9 @@
             display: block;
         }
     </style>
+
+    {{-- Page-specific CSS will be injected here --}}
+    @stack('css')
 </head>
 <body>
 
@@ -126,6 +129,9 @@
         });
     });
 </script>
+
+{{-- Page-specific JS can be injected here if needed --}}
+@stack('scripts')
 
 </body>
 </html>
