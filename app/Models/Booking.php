@@ -31,6 +31,7 @@ class Booking extends Model
     protected $casts = [
         'check_in' => 'datetime',
         'check_out' => 'datetime',
+        'booking_date' => 'datetime',
         'id_front' => 'array', // Cast multiple front IDs as array
         'id_back' => 'array',  // Cast multiple back IDs as array
     ];

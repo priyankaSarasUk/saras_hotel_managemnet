@@ -7,6 +7,7 @@ use App\Models\Customer;
 use App\Models\Room;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
+use Jenssegers\Agent\Agent; //  add this
 
 class BookingController extends Controller
 {
@@ -15,7 +16,9 @@ class BookingController extends Controller
         $query = Booking::with(['customer', 'room', 'user']);
 
         if ($request->filled('customer_name')) {
-            $query->whereHas('customer', fn($q) => $q->where('name', 'like', '%' . $request->customer_name . '%'));
+            $query->whereHas('customer', fn($q) =>
+                $q->where('name', 'like', '%' . $request->customer_name . '%')
+            );
         }
 
         if ($request->filled('booking_date')) {
@@ -31,12 +34,25 @@ class BookingController extends Controller
         }
 
         $bookings = $query->orderBy('created_at', 'desc')->paginate(10);
-        $customer = $request->filled('customer_id') ? Customer::find($request->customer_id) : null;
+
+        $customer = $request->filled('customer_id')
+            ? Customer::find($request->customer_id)
+            : null;
 
         $customers = Customer::all();
         $rooms = Room::all();
 
-        return view('bookings.index', compact('bookings', 'customer', 'customers', 'rooms'));
+        //  detect device
+        $agent = new Agent();
+        $isMobile = $agent->isMobile();
+
+        return view('bookings.index', compact(
+            'bookings',
+            'customer',
+            'customers',
+            'rooms',
+            'isMobile' // ✅ pass to view
+        ));
     }
 
     public function create()
@@ -202,6 +218,10 @@ class BookingController extends Controller
 
         $customer = Customer::findOrFail($customerId);
 
-        return view('bookings.index', compact('bookings', 'customer'));
+        //  also detect device here
+        $agent = new Agent();
+        $isMobile = $agent->isMobile();
+
+        return view('bookings.index', compact('bookings', 'customer', 'isMobile'));
     }
 }

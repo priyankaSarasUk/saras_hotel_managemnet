@@ -40,8 +40,8 @@
         </div>
     </form>
 
-    <!-- Customer Table -->
-    <div class="table-container">
+    {{-- ================= Desktop View (Table) ================= --}}
+    <div class="d-none d-md-block table-container">
         <table class="table table-bordered table-hover table-sm">
             <thead class="table-light">
                 <tr>
@@ -64,23 +64,15 @@
                         <td>{{ $customer->phone }}</td>
                         <td>{{ $customer->address }}</td>
                         <td>{{ $customer->email }}</td>
-
-                        {{-- Bookings count --}}
                         <td>
                             <a href="{{ route('bookings.index', ['customer_id' => $customer->id]) }}" class="btn btn-link p-0">
                                 {{ $customer->bookings_count ?? 0 }}
                             </a>
                         </td>
-
-                        {{-- Date Added --}}
                         <td>{{ $customer->created_at->format('Y-m-d') }}</td>
-
-                        {{-- Age, Nationality, Occupation --}}
                         <td>{{ $customer->age }}</td>
                         <td>{{ $customer->nationality }}</td>
                         <td>{{ $customer->occupation }}</td>
-
-                        {{-- Actions --}}
                         <td>
                             <a href="{{ route('customers.edit', $customer->id) }}" class="btn btn-sm btn-warning">Edit</a>
                             <form action="{{ route('customers.destroy', $customer->id) }}" method="POST" class="d-inline">
@@ -102,13 +94,100 @@
         </table>
     </div>
 
+    {{-- ================= Mobile View (Cards) ================= --}}
+    <div class="d-block d-md-none">
+        <style>
+            .customer-card {
+                background: #fff;
+                border: 1px solid #e5e7eb;
+                border-radius: 14px;
+                box-shadow: 0 1px 6px rgba(17,24,39,.08);
+                padding: 12px;
+                margin-bottom: 12px;
+            }
+            .customer-head {
+                display: flex;
+                justify-content: space-between;
+                align-items: center;
+                margin-bottom: 6px;
+            }
+            .customer-name {
+                font-weight: 700;
+                font-size: 16px;
+                color: #111827;
+            }
+            .customer-sub {
+                font-size: 13px;
+                color: #6b7280;
+                margin-bottom: 4px;
+            }
+            .customer-sub a {
+                color: #0d6efd;
+                font-weight: 600;
+                text-decoration: none;
+            }
+            .customer-sub a:hover {
+                text-decoration: underline;
+            }
+            .dropdown-toggle::after {
+                display: none;
+            }
+        </style>
+
+        <div class="row">
+            @forelse($customers as $customer)
+                <div class="col-12">
+                    <div class="customer-card">
+                        <div class="customer-head">
+                            <div class="customer-name">{{ $customer->name }}</div>
+
+                            {{-- Three-dot menu --}}
+                            <div class="dropdown">
+                                <button class="btn btn-sm btn-light dropdown-toggle" type="button" id="dropdownMenuButton{{ $customer->id }}" data-bs-toggle="dropdown" aria-expanded="false">
+                                    &#x22EE;
+                                </button>
+                                <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="dropdownMenuButton{{ $customer->id }}">
+                                    <li><a class="dropdown-item" href="{{ route('customers.edit', $customer->id) }}">Edit</a></li>
+                                    <li>
+                                        <form action="{{ route('customers.destroy', $customer->id) }}" method="POST" onsubmit="return confirm('Are you sure you want to delete this customer?')">
+                                            @csrf
+                                            @method('DELETE')
+                                            <button class="dropdown-item text-danger" type="submit">Delete</button>
+                                        </form>
+                                    </li>
+                                </ul>
+                            </div>
+                        </div>
+
+                        <div class="customer-sub"><strong>Phone:</strong> {{ $customer->phone }}</div>
+                        <div class="customer-sub"><strong>Email:</strong> {{ $customer->email }}</div>
+                        <div class="customer-sub">
+                            <strong>Bookings:</strong>
+                            <a href="{{ route('bookings.index', ['customer_id' => $customer->id]) }}">
+                                {{ $customer->bookings_count ?? 0 }}
+                            </a>
+                        </div>
+                        <div class="customer-sub"><strong>Added:</strong> {{ $customer->created_at->format('Y-m-d') }}</div>
+                        <div class="customer-sub"><strong>Age:</strong> {{ $customer->age }}</div>
+                        <div class="customer-sub"><strong>Nationality:</strong> {{ $customer->nationality }}</div>
+                        <div class="customer-sub"><strong>Occupation:</strong> {{ $customer->occupation }}</div>
+                    </div>
+                </div>
+            @empty
+                <div class="col-12">
+                    <div class="alert alert-info text-center">No customers found</div>
+                </div>
+            @endforelse
+        </div>
+    </div>
+
     <!-- Pagination -->
-    <div class="mt-2">
+    <div class="mt-2 d-flex justify-content-center">
         {{ $customers->links() }}
     </div>
 </div>
 
-<!-- Modal (Add Customer Form) -->
+{{-- Modal (Add Customer Form) --}}
 <div class="modal fade" id="customerModal" tabindex="-1" aria-labelledby="customerModalLabel" aria-hidden="true">
     <div class="modal-dialog">
         <div class="modal-content">
